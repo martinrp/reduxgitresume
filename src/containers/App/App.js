@@ -8,7 +8,6 @@ import NavItem from 'react-bootstrap/lib/NavItem';
 import Helmet from 'react-helmet';
 import { isLoaded as isInfoLoaded, load as loadInfo } from 'redux/modules/info';
 import { isLoaded as isAuthLoaded, load as loadAuth, logout } from 'redux/modules/auth';
-import { InfoBar } from 'components';
 import { routeActions } from 'react-router-redux';
 import config from '../../config';
 import { asyncConnect } from 'redux-async-connect';
@@ -76,11 +75,6 @@ export default class App extends Component {
           </Navbar.Header>
 
           <Navbar.Collapse eventKey={0}>
-            <Nav navbar>
-              <LinkContainer to="/widgets">
-                <NavItem eventKey={2}>Widgets</NavItem>
-              </LinkContainer>
-            </Nav>
             {user &&
             <p className={styles.loggedInMessage + ' navbar-text'}>Logged in as <strong>{user.name}</strong>.</p>}
             <Nav navbar pullRight>

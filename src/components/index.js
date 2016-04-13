@@ -7,4 +7,4 @@
 
 export CounterButton from './CounterButton/CounterButton';
 export InfoBar from './InfoBar/InfoBar';
-export WidgetForm from './WidgetForm/WidgetForm';
+export GitNameForm from './GitNameForm/GitNameForm';

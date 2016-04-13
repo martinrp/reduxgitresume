@@ -1,8 +1,6 @@
 const LOAD = 'redux-example/widgets/LOAD';
 const LOAD_SUCCESS = 'redux-example/widgets/LOAD_SUCCESS';
 const LOAD_FAIL = 'redux-example/widgets/LOAD_FAIL';
-const EDIT_START = 'redux-example/widgets/EDIT_START';
-const EDIT_STOP = 'redux-example/widgets/EDIT_STOP';
 const SAVE = 'redux-example/widgets/SAVE';
 const SAVE_SUCCESS = 'redux-example/widgets/SAVE_SUCCESS';
 const SAVE_FAIL = 'redux-example/widgets/SAVE_FAIL';
@@ -35,22 +33,6 @@ export default function reducer(state = initialState, action = {}) {
         loaded: false,
         data: null,
         error: action.error
-      };
-    case EDIT_START:
-      return {
-        ...state,
-        editing: {
-          ...state.editing,
-          [action.id]: true
-        }
-      };
-    case EDIT_STOP:
-      return {
-        ...state,
-        editing: {
-          ...state.editing,
-          [action.id]: false
-        }
       };
     case SAVE:
       return state; // 'saving' flag handled by redux-form
@@ -101,12 +83,4 @@ export function save(widget) {
       data: widget
     })
   };
-}
-
-export function editStart(id) {
-  return { type: EDIT_START, id };
-}
-
-export function editStop(id) {
-  return { type: EDIT_STOP, id };
 }

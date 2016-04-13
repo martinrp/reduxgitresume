@@ -7,7 +7,7 @@ import auth from './auth';
 import counter from './counter';
 import {reducer as form} from 'redux-form';
 import info from './info';
-import widgets from './widgets';
+import gitname from './gitname';
 
 export default combineReducers({
   routing: routeReducer,
@@ -20,5 +20,5 @@ export default combineReducers({
     counter3: counter
   }),
   info,
-  widgets
+  gitname
 });

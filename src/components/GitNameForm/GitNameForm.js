@@ -8,7 +8,8 @@ import _ from 'underscore';
 @connect(
   state => ({
     sendError: state.gitname.sendError,
-    items: state.gitname.items,
+    repos: state.gitname.repos,
+    user: state.gitname.user,
     isFetching: state.gitname.isFetching,
     lastUpdated: state.gitname.lastUpdated
   }),
@@ -26,33 +27,35 @@ export default class GitNameForm extends Component {
     handleSubmit: PropTypes.func.isRequired,
     invalid: PropTypes.bool.isRequired,
     pristine: PropTypes.bool.isRequired,
-    fetchAllRepos: PropTypes.func.isRequired,
+    fetchUserData: PropTypes.func.isRequired,
     submitting: PropTypes.bool.isRequired,
+    values: PropTypes.object.isRequired,
     sendError: PropTypes.object,
     formKey: PropTypes.string,
-    values: PropTypes.object.isRequired,
-    items: PropTypes.array,
+    user: PropTypes.object,
+    repos: PropTypes.array,
     isFetching: PropTypes.bool,
     lastUpdated: PropTypes.number
   };
 
   render() {
     const { fields: {owner}, formKey, handleSubmit, invalid,
-      pristine, fetchAllRepos, submitting, sendError: { [formKey]: sendError }, 
-      values, items, isFetching, lastUpdated } = this.props;
+      pristine, fetchUserData, submitting, sendError: { [formKey]: sendError }, 
+      values, user, repos, isFetching, lastUpdated } = this.props;
     const styles = require('components/GitNameForm/Gitform.scss');
 
     function userLoaded(){
-      return items.length > 0;
+      return user && user.login && user.login.length > 0;
     }
 
     function getUserCodeSplit(){
+
       let languages = {};
       let langPerc = [];
       let repoNum = 0;
 
       // Split into language popularity
-      _.each(items, function(repo, i) {
+      _.each(repos, function(repo, i) {
         if (repo.language) {
           repoNum++;
           if (repo.language in languages) {
@@ -84,7 +87,7 @@ export default class GitNameForm extends Component {
           </div>
           <div className={'col-md-2 button-col'}>
             <button className="btn"
-              onClick={handleSubmit(() => fetchAllRepos(values)
+              onClick={handleSubmit(() => fetchUserData(values)
                 .then(result => {
                   if (result && typeof result.error === 'object') {
                     return Promise.reject(result.error);
@@ -99,6 +102,9 @@ export default class GitNameForm extends Component {
         </div>
 
         {userLoaded() && <div className={'col-md-12'}>
+          <img src={user.avatar_url} className="img-responsive" alt={user.login + 'Avatar'}></img>
+          <h2>{user.login}</h2>
+          <h4>{user.url}</h4>
           <h3>Languages</h3>
           <div>
             {_.map(getUserCodeSplit(), function(obj, i) {

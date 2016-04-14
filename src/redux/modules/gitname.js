@@ -1,33 +1,35 @@
 import fetch from 'isomorphic-fetch';
 const REQUEST_REPOS = 'redux-example/gitname/REQUEST_REPOS';
 const RECEIVE_REPOS = 'redux-example/gitname/RECEIVE_REPOS';
+const REQUEST_USER = 'redux-example/gitname/REQUEST_USER';
+const RECEIVE_USER = 'redux-example/gitname/RECEIVE_USER';
 
 const initialState = {
   loaded: false,
   isFetching: false,
   didInvalidate: false,
   lastUpdated: 1,
-  items: [],
+  repos: [],
   editing: {},
-  sendError: {}
+  sendError: {},
+  user: {}
 };
 
 // Reducer
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
-    case REQUEST_REPOS:
-      console.log('reducer - REQUEST_REPOS', action);
+    case REQUEST_USER:
       return Object.assign({}, state, {
         isFetching: true,
         didInvalidate: false
       })
-    case RECEIVE_REPOS:
-      console.log('reducer - RECEIVE_REPOS', action);
+    case RECEIVE_USER:
       return Object.assign({}, state, {
         isFetching: false,
         didInvalidate: false,
-        items: action.repos,
+        user: action.user,
+        repos: action.repos,
         lastUpdated: action.receivedAt,
         sendError: {
           ...state.sendError,
@@ -41,25 +43,28 @@ export default function reducer(state = initialState, action = {}) {
 
 // Actions Creators
 
-export function requestRepos(gitName) {
-  console.log('requestRepos', gitName);
+export function requestUser(gitName) {
+  console.log('requestUser', gitName);
   return {
-    type: REQUEST_REPOS,
+    type: REQUEST_USER,
     gitName
   };
 }
 
-export function receiveRepos(gitName, json) {
-  console.log('receiveRepos', gitName, json);
+export function receiveUser(gitName, user, repos) {
+  console.log('receiveUser', gitName, user, repos);
   return {
-    type: RECEIVE_REPOS,
+    type: RECEIVE_USER,
     gitName,
-    repos: json,
+    user: user,
+    repos: repos,
     receivedAt: Date.now()
   };
 }
 
-export function fetchAllRepos(req) {
+// Commands
+
+function fetchAllRepos(req) {
   let gitName = req.owner;
   let baseUrl = `https://api.github.com/users/${gitName}/repos?per_page=100`;
   let repos = [];
@@ -81,15 +86,28 @@ export function fetchAllRepos(req) {
         pageNum = pageNum + 1;
         return requestGitRepos();
       }
+      console.log('repos', repos);
       return repos;
     })
 
   }
 
+  return requestGitRepos();
+
+}
+
+export function fetchUserData(req){
+  let gitName = req.owner;
+  let baseUrl = `https://api.github.com/users/${gitName}`;
+  let repos = [];
+
   return dispatch => {
-    dispatch(requestRepos(gitName));
-    dispatch(receiveRepos(gitName, repos));
-    return requestGitRepos()
-      .then(res => dispatch(receiveRepos(gitName, res)));
-  };
+    dispatch(requestUser(gitName));
+    // Fetch all user data and repos
+    return Promise.all([fetch(baseUrl), fetchAllRepos(req)])
+    .then(function(values) {
+      values[0].json()
+      .then(json => dispatch(receiveUser(gitName, json, values[1])));
+    });
+  }
 }

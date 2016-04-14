@@ -6,10 +6,16 @@ import * as gitnameActions from 'redux/modules/gitname';
 
 @connect(
   state => ({
-    saveError: state.widgets.saveError
+    sendError: state.gitname.sendError,
+    items: state.gitname.items,
+    isFetching: state.gitname.isFetching,
+    lastUpdated: state.gitname.lastUpdated
   }),
   dispatch => bindActionCreators(gitnameActions, dispatch)
 )
+
+//
+
 @reduxForm({
   form: 'widget',
   fields: ['owner']
@@ -21,17 +27,22 @@ export default class GitNameForm extends Component {
     handleSubmit: PropTypes.func.isRequired,
     invalid: PropTypes.bool.isRequired,
     pristine: PropTypes.bool.isRequired,
-    save: PropTypes.func.isRequired,
+    fetchAllRepos: PropTypes.func.isRequired,
     submitting: PropTypes.bool.isRequired,
-    saveError: PropTypes.object,
-    formKey: PropTypes.string.isRequired,
-    values: PropTypes.object.isRequired
+    sendError: PropTypes.object,
+    formKey: PropTypes.string,
+    values: PropTypes.object.isRequired,
+    items: PropTypes.array,
+    isFetching: PropTypes.bool,
+    lastUpdated: PropTypes.string
   };
 
   render() {
     const { fields: {owner}, formKey, handleSubmit, invalid,
-      pristine, save, submitting, saveError: { [formKey]: saveError }, values } = this.props;
+      pristine, fetchAllRepos, submitting, sendError: { [formKey]: sendError }, values, items, isFetching, lastUpdated } = this.props;
     const styles = require('components/GitNameForm/Widgets.scss');
+
+    // console.log('PROPS', sendError, items, isFetching, lastUpdated, submitting);
 
     return (
 
@@ -42,7 +53,7 @@ export default class GitNameForm extends Component {
         </div>
         <div className={styles.buttonCol}>
           <button className="btn btn-success"
-                  onClick={handleSubmit(() => save(values)
+                  onClick={handleSubmit(() => fetchAllRepos(values)
                     .then(result => {
                       if (result && typeof result.error === 'object') {
                         return Promise.reject(result.error);
@@ -50,12 +61,15 @@ export default class GitNameForm extends Component {
                     })
                   )}
                   disabled={pristine || invalid || submitting}>
-            <i className={'fa ' + (submitting ? 'fa-cog fa-spin' : 'fa-cloud')}/> Save
+            <i className={'fa ' + (submitting ? 'fa-cog fa-spin' : 'fa-cloud')}/> Send
           </button>
-          {saveError && <div className="text-danger">{saveError}</div>}
+          {sendError && <div className="text-danger">{sendError}</div>}
         </div>
+        <div>ITEMS</div>
+        <div>{items}</div>
+
+        {submitting && <div>submitting</div>}
       </div>
     );
   }
 }
-

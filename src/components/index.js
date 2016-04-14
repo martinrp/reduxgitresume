@@ -5,6 +5,5 @@
  *
  */
 
-export CounterButton from './CounterButton/CounterButton';
 export InfoBar from './InfoBar/InfoBar';
 export GitNameForm from './GitNameForm/GitNameForm';

@@ -1,86 +1,93 @@
-const LOAD = 'redux-example/widgets/LOAD';
-const LOAD_SUCCESS = 'redux-example/widgets/LOAD_SUCCESS';
-const LOAD_FAIL = 'redux-example/widgets/LOAD_FAIL';
-const SAVE = 'redux-example/widgets/SAVE';
-const SAVE_SUCCESS = 'redux-example/widgets/SAVE_SUCCESS';
-const SAVE_FAIL = 'redux-example/widgets/SAVE_FAIL';
+import fetch from 'isomorphic-fetch';
+const REQUEST_POSTS = 'redux-example/gitname/REQUEST_POSTS';
+const RECEIVE_POSTS = 'redux-example/gitname/RECEIVE_POSTS';
 
 const initialState = {
   loaded: false,
+  isFetching: false,
+  didInvalidate: false,
+  lastUpdated: '10/05/2013',
+  items: [1, 2, 3],
   editing: {},
-  saveError: {}
+  sendError: {}
 };
+
+// Reducer
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
-    case LOAD:
-      return {
-        ...state,
-        loading: true
-      };
-    case LOAD_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        data: action.result,
-        error: null
-      };
-    case LOAD_FAIL:
-      return {
-        ...state,
-        loading: false,
-        loaded: false,
-        data: null,
-        error: action.error
-      };
-    case SAVE:
-      return state; // 'saving' flag handled by redux-form
-    case SAVE_SUCCESS:
-      const data = [...state.data];
-      data[action.result.id - 1] = action.result;
-      return {
-        ...state,
-        data: data,
-        editing: {
-          ...state.editing,
-          [action.id]: false
-        },
-        saveError: {
-          ...state.saveError,
-          [action.id]: null
-        }
-      };
-    case SAVE_FAIL:
-      return typeof action.error === 'string' ? {
-        ...state,
-        saveError: {
-          ...state.saveError,
+    case REQUEST_POSTS:
+      console.log('reducer - REQUEST_POSTS', action);
+      return Object.assign({}, state, {
+        isFetching: true,
+        didInvalidate: false
+      })
+    case RECEIVE_POSTS:
+      console.log('reducer - RECEIVE_POSTS', action);
+      return Object.assign({}, state, {
+        isFetching: false,
+        didInvalidate: false,
+        items: action.repos,
+        lastUpdated: action.receivedAt,
+        sendError: {
+          ...state.sendError,
           [action.id]: action.error
         }
-      } : state;
+      })
     default:
       return state;
   }
 }
 
-export function isLoaded(globalState) {
-  return globalState.widgets && globalState.widgets.loaded;
-}
+// Actions Creators
 
-export function load() {
+export function requestPosts(gitName) {
   return {
-    types: [LOAD, LOAD_SUCCESS, LOAD_FAIL],
-    promise: (client) => client.get('/widget/load/param1/param2') // params not used, just shown as demonstration
+    type: REQUEST_POSTS,
+    gitName
   };
 }
 
-export function save(widget) {
+export function receivePosts(gitName, json) {
+  console.log('receivePosts', gitName, json);
   return {
-    types: [SAVE, SAVE_SUCCESS, SAVE_FAIL],
-    id: widget.id,
-    promise: (client) => client.post('/widget/update', {
-      data: widget
+    type: RECEIVE_POSTS,
+    gitName,
+    repos: json.data.children.map(child => child.data),
+    receivedAt: Date.now()
+  };
+}
+
+export function fetchAllRepos(req) {
+  let gitName = req.owner;
+  let baseUrl = `https://api.github.com/users/${gitName}/repos?per_page=100`;
+  let repos = [];
+  let pageNum = 0;
+
+  function requestGitRepos() {
+    let url = baseUrl;
+    if (pageNum > 1) { url = baseUrl + '&page=' + pageNum; }
+
+    return fetch(url).then(function(res) {
+      if (res.status >= 400) {
+        throw new Error("Bad response from server");
+      }
+      return res.json();
     })
+    .then(function(json) {
+      repos = repos.concat(json);
+      if (json.length === 100) {
+        pageNum = pageNum + 1;
+        return requestGitRepos();
+      }
+      return repos;
+    })
+
+  }
+
+  return dispatch => {
+    dispatch(requestPosts(gitName));
+    return requestGitRepos()
+      .then(res => dispatch(receivePosts(gitName, res)));
   };
 }

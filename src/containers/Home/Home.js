@@ -18,9 +18,7 @@ export default class Home extends Component {
         </div>
 
         <div className="container">
-
           <GitNameForm />
-
         </div>
       </div>
     );

@@ -3,13 +3,11 @@ import { routeReducer } from 'react-router-redux';
 import {reducer as reduxAsyncConnect} from 'redux-async-connect';
 
 import {reducer as form} from 'redux-form';
-import info from './info';
 import gitname from './gitname';
 
 export default combineReducers({
   routing: routeReducer,
   reduxAsyncConnect,
   form,
-  info,
   gitname
 });

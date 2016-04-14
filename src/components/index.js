@@ -5,5 +5,4 @@
  *
  */
 
-export InfoBar from './InfoBar/InfoBar';
 export GitNameForm from './GitNameForm/GitNameForm';

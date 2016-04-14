@@ -15,8 +15,6 @@ import _ from 'underscore';
   dispatch => bindActionCreators(gitnameActions, dispatch)
 )
 
-//
-
 @reduxForm({
   form: 'widget',
   fields: ['owner']
@@ -46,26 +44,30 @@ export default class GitNameForm extends Component {
 
     function getUserCodeSplit(){
       let languages = {};
+      let langPerc = [];
+      let repoNum = 0;
 
+      // Split into language popularity
       _.each(items, function(repo, i) {
-
-        // if (repo.fork === false) {
-        //   return;
-        // }
-
         if (repo.language) {
+          repoNum++;
           if (repo.language in languages) {
             languages[repo.language]++;
           } else {
             languages[repo.language] = 1;
           }
         }
-
       });
 
-      console.log('languages', items, languages);
+      // Get repo total / language percentage
+      langPerc = _.map(languages, function(num, lang) {
+        return { 
+          'language': lang,
+          'perc': parseInt((num / repoNum) * 100, 10)
+        }
+      });
 
-      return 'languages';
+      return _.sortBy(langPerc, function(obj){ return -obj.perc; });
     }
 
     return (
@@ -89,12 +91,12 @@ export default class GitNameForm extends Component {
           </button>
           {sendError && <div className="text-danger">{sendError}</div>}
         </div>
-        <div>ITEMS</div>
-        {submitting && <div>submitting</div>}
-
-        <div>Languages</div>
-        <div>{getUserCodeSplit()}</div>
-
+        <h3>Languages</h3>
+         <div>
+          {_.map(getUserCodeSplit(), function(obj, i) {
+            return <p>{obj.language} &#45; {obj.perc}&#37;</p>;
+          })}
+        </div>
 
       </div>
     );

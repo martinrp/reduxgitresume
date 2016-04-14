@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {reduxForm} from 'redux-form';
 import * as gitnameActions from 'redux/modules/gitname';
+import _ from 'underscore';
 
 @connect(
   state => ({
@@ -34,15 +35,38 @@ export default class GitNameForm extends Component {
     values: PropTypes.object.isRequired,
     items: PropTypes.array,
     isFetching: PropTypes.bool,
-    lastUpdated: PropTypes.string
+    lastUpdated: PropTypes.number
   };
 
   render() {
     const { fields: {owner}, formKey, handleSubmit, invalid,
-      pristine, fetchAllRepos, submitting, sendError: { [formKey]: sendError }, values, items, isFetching, lastUpdated } = this.props;
+      pristine, fetchAllRepos, submitting, sendError: { [formKey]: sendError }, 
+      values, items, isFetching, lastUpdated } = this.props;
     const styles = require('components/GitNameForm/Widgets.scss');
 
-    // console.log('PROPS', sendError, items, isFetching, lastUpdated, submitting);
+    function getUserCodeSplit(){
+      let languages = {};
+
+      _.each(items, function(repo, i) {
+
+        // if (repo.fork === false) {
+        //   return;
+        // }
+
+        if (repo.language) {
+          if (repo.language in languages) {
+            languages[repo.language]++;
+          } else {
+            languages[repo.language] = 1;
+          }
+        }
+
+      });
+
+      console.log('languages', items, languages);
+
+      return 'languages';
+    }
 
     return (
 
@@ -66,9 +90,12 @@ export default class GitNameForm extends Component {
           {sendError && <div className="text-danger">{sendError}</div>}
         </div>
         <div>ITEMS</div>
-        <div>{items}</div>
-
         {submitting && <div>submitting</div>}
+
+        <div>Languages</div>
+        <div>{getUserCodeSplit()}</div>
+
+
       </div>
     );
   }

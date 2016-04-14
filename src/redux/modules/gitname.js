@@ -6,7 +6,7 @@ const initialState = {
   loaded: false,
   isFetching: false,
   didInvalidate: false,
-  lastUpdated: '10/05/2013',
+  lastUpdated: 1234,
   items: [1, 2, 3],
   editing: {},
   sendError: {}
@@ -42,6 +42,7 @@ export default function reducer(state = initialState, action = {}) {
 // Actions Creators
 
 export function requestPosts(gitName) {
+  console.log('requestPosts', gitName);
   return {
     type: REQUEST_POSTS,
     gitName
@@ -53,7 +54,7 @@ export function receivePosts(gitName, json) {
   return {
     type: RECEIVE_POSTS,
     gitName,
-    repos: json.data.children.map(child => child.data),
+    repos: json,
     receivedAt: Date.now()
   };
 }
@@ -87,6 +88,7 @@ export function fetchAllRepos(req) {
 
   return dispatch => {
     dispatch(requestPosts(gitName));
+    dispatch(receivePosts(gitName, repos));
     return requestGitRepos()
       .then(res => dispatch(receivePosts(gitName, res)));
   };

@@ -40,7 +40,11 @@ export default class GitNameForm extends Component {
     const { fields: {owner}, formKey, handleSubmit, invalid,
       pristine, fetchAllRepos, submitting, sendError: { [formKey]: sendError }, 
       values, items, isFetching, lastUpdated } = this.props;
-    const styles = require('components/GitNameForm/Widgets.scss');
+    const styles = require('components/GitNameForm/Gitform.scss');
+
+    function userLoaded(){
+      return items.length > 0;
+    }
 
     function getUserCodeSplit(){
       let languages = {};
@@ -71,32 +75,37 @@ export default class GitNameForm extends Component {
     }
 
     return (
+      <div>
 
-      <div className={submitting ? styles.loading : ''}>
-        <div className={styles.ownerCol}>
-          <input type="text" className="form-control" {...owner}/>
-          {owner.error && owner.touched && <div className="text-danger">{owner.error}</div>}
+        <div className={submitting ? styles.loading : ''}>
+          <div className={'col-md-10'}>
+            <input type="text" className="form-control" {...owner}/>
+            {owner.error && owner.touched && <div className="text-danger">{owner.error}</div>}
+          </div>
+          <div className={'col-md-2 button-col'}>
+            <button className="btn"
+              onClick={handleSubmit(() => fetchAllRepos(values)
+                .then(result => {
+                  if (result && typeof result.error === 'object') {
+                    return Promise.reject(result.error);
+                  }
+                })
+              )}
+              disabled={pristine || invalid || submitting}>
+              <i className={'fa ' + (submitting ? 'fa-cog fa-spin' : 'fa-cloud')}/> Send
+            </button>
+            {sendError && <div className="text-danger">{sendError}</div>}
+          </div>
         </div>
-        <div className={styles.buttonCol}>
-          <button className="btn btn-success"
-                  onClick={handleSubmit(() => fetchAllRepos(values)
-                    .then(result => {
-                      if (result && typeof result.error === 'object') {
-                        return Promise.reject(result.error);
-                      }
-                    })
-                  )}
-                  disabled={pristine || invalid || submitting}>
-            <i className={'fa ' + (submitting ? 'fa-cog fa-spin' : 'fa-cloud')}/> Send
-          </button>
-          {sendError && <div className="text-danger">{sendError}</div>}
-        </div>
-        <h3>Languages</h3>
-         <div>
-          {_.map(getUserCodeSplit(), function(obj, i) {
-            return <p>{obj.language} &#45; {obj.perc}&#37;</p>;
-          })}
-        </div>
+
+        {userLoaded() && <div className={'col-md-12'}>
+          <h3>Languages</h3>
+          <div>
+            {_.map(getUserCodeSplit(), function(obj, i) {
+              return <p>{obj.language} &#45; {obj.perc}&#37;</p>;
+            })}
+          </div>
+        </div>}
 
       </div>
     );

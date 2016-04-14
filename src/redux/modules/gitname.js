@@ -1,13 +1,13 @@
 import fetch from 'isomorphic-fetch';
-const REQUEST_POSTS = 'redux-example/gitname/REQUEST_POSTS';
-const RECEIVE_POSTS = 'redux-example/gitname/RECEIVE_POSTS';
+const REQUEST_REPOS = 'redux-example/gitname/REQUEST_REPOS';
+const RECEIVE_REPOS = 'redux-example/gitname/RECEIVE_REPOS';
 
 const initialState = {
   loaded: false,
   isFetching: false,
   didInvalidate: false,
-  lastUpdated: 1234,
-  items: [1, 2, 3],
+  lastUpdated: 1,
+  items: [],
   editing: {},
   sendError: {}
 };
@@ -16,14 +16,14 @@ const initialState = {
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
-    case REQUEST_POSTS:
-      console.log('reducer - REQUEST_POSTS', action);
+    case REQUEST_REPOS:
+      console.log('reducer - REQUEST_REPOS', action);
       return Object.assign({}, state, {
         isFetching: true,
         didInvalidate: false
       })
-    case RECEIVE_POSTS:
-      console.log('reducer - RECEIVE_POSTS', action);
+    case RECEIVE_REPOS:
+      console.log('reducer - RECEIVE_REPOS', action);
       return Object.assign({}, state, {
         isFetching: false,
         didInvalidate: false,
@@ -41,18 +41,18 @@ export default function reducer(state = initialState, action = {}) {
 
 // Actions Creators
 
-export function requestPosts(gitName) {
-  console.log('requestPosts', gitName);
+export function requestRepos(gitName) {
+  console.log('requestRepos', gitName);
   return {
-    type: REQUEST_POSTS,
+    type: REQUEST_REPOS,
     gitName
   };
 }
 
-export function receivePosts(gitName, json) {
-  console.log('receivePosts', gitName, json);
+export function receiveRepos(gitName, json) {
+  console.log('receiveRepos', gitName, json);
   return {
-    type: RECEIVE_POSTS,
+    type: RECEIVE_REPOS,
     gitName,
     repos: json,
     receivedAt: Date.now()
@@ -87,9 +87,9 @@ export function fetchAllRepos(req) {
   }
 
   return dispatch => {
-    dispatch(requestPosts(gitName));
-    dispatch(receivePosts(gitName, repos));
+    dispatch(requestRepos(gitName));
+    dispatch(receiveRepos(gitName, repos));
     return requestGitRepos()
-      .then(res => dispatch(receivePosts(gitName, res)));
+      .then(res => dispatch(receiveRepos(gitName, res)));
   };
 }
